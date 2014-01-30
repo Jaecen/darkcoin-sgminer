@@ -53,7 +53,7 @@ char *curly = ":D";
 #include "adl.h"
 #include "driver-opencl.h"
 #include "bench_block.h"
-#include "scrypt.h"
+#include "xcoin.h"
 
 #if defined(unix) || defined(__APPLE__)
 	#include <errno.h>
@@ -5950,7 +5950,7 @@ static void rebuild_nonce(struct work *work, uint32_t nonce)
 
 	*work_nonce = htole32(nonce);
 
-	scrypt_regenhash(work);
+	xcoin_regenhash(work);
 }
 
 /* For testing a nonce against diff 1 */
