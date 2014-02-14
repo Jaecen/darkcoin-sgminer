@@ -204,6 +204,8 @@ static enum cl_kernels select_kernel(char *arg)
 		return KL_CKOLIVAS;
 	if (!strcmp(arg, ZUIKKIS_KERNNAME))
 		return KL_ZUIKKIS;
+	if (!strcmp(arg, DARKCOIN_KERNNAME))
+		return KL_DARKCOIN;
 
 	return KL_NONE;
 }
@@ -1007,18 +1009,16 @@ static cl_int queue_scrypt_kernel(_clState *clState, dev_blk_ctx *blk, __maybe_u
 	unsigned char *midstate = blk->work->midstate;
 	cl_kernel *kernel = &clState->kernel;
 	unsigned int num = 0;
-	cl_uint le_target;
+	cl_ulong le_target;
 	cl_int status = 0;
 
-	le_target = *(cl_uint *)(blk->work->device_target + 28);
-	clState->cldata = blk->work->data;
+	le_target = *(cl_ulong *)(blk->work->device_target + 24);
+	flip80(clState->cldata, blk->work->data);
+
 	status = clEnqueueWriteBuffer(clState->commandQueue, clState->CLbuffer0, true, 0, 80, clState->cldata, 0, NULL,NULL);
 
 	CL_SET_ARG(clState->CLbuffer0);
 	CL_SET_ARG(clState->outputBuffer);
-	CL_SET_ARG(clState->padbuffer8);
-	CL_SET_VARG(4, &midstate[0]);
-	CL_SET_VARG(4, &midstate[16]);
 	CL_SET_ARG(le_target);
 
 	return status;
@@ -1309,6 +1309,9 @@ static bool opencl_thread_prepare(struct thr_info *thr)
 			case KL_ZUIKKIS:
 				cgpu->kname = ZUIKKIS_KERNNAME;
 				break;
+			case KL_DARKCOIN:
+				cgpu->kname = DARKCOIN_KERNNAME;
+				break;
 			default:
 				break;
 		}
@@ -1341,6 +1344,7 @@ static bool opencl_thread_init(struct thr_info *thr)
 	case KL_ALEXKAROLD:
 	case KL_CKOLIVAS:
 	case KL_ZUIKKIS:
+	case KL_DARKCOIN:
 		thrdata->queue_kernel_parameters = &queue_scrypt_kernel;
 		break;
 	default:

@@ -673,7 +673,7 @@ bool fulltest(const unsigned char *hash, const unsigned char *target)
 	int i;
 
 	for (i = 28 / 4; i >= 0; i--) {
-		uint32_t h32tmp = le32toh(hash32[i]);
+		uint32_t h32tmp = be32toh(hash32[i]);
 		uint32_t t32tmp = le32toh(target32[i]);
 
 		if (h32tmp > t32tmp) {

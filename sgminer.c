@@ -2928,7 +2928,7 @@ static void calc_diff(struct work *work, double known)
 	else {
 		double d64, dcut64;
 
-		d64 = (double)65536 * truediffone;
+		d64 = truediffone;
 
 		dcut64 = le256todouble(work->target);
 		if (unlikely(!dcut64))
@@ -3546,7 +3546,7 @@ static uint64_t share_diff(const struct work *work)
 	double d64, s64;
 	uint64_t ret;
 
-	d64 = (double)65536 * truediffone;
+	d64 = truediffone;
 	s64 = le256todouble(work->hash);
 	if (unlikely(!s64))
 		s64 = 0;
@@ -3873,7 +3873,7 @@ static void set_blockdiff(const struct work *work)
 	uint8_t pow = work->data[72];
 	int powdiff = (8 * (0x1d - 3)) - (8 * (pow - 3));
 	uint32_t diff32 = be32toh(*((uint32_t *)(work->data + 72))) & 0x00FFFFFF;
-	double numerator = 0xFFFFFFFFULL << powdiff;
+	double numerator = 0xFFFFULL << powdiff;
 	double ddiff = numerator / (double)diff32;
 
 	if (unlikely(current_diff != ddiff)) {
@@ -4194,6 +4194,9 @@ void write_config(FILE *fcfg)
 					break;
 				case KL_ZUIKKIS:
 					fprintf(fcfg, ZUIKKIS_KERNNAME);
+					break;
+				case KL_DARKCOIN:
+					fprintf(fcfg, DARKCOIN_KERNNAME);
 					break;
 			}
 		}
@@ -5745,7 +5748,7 @@ void set_target(unsigned char *dest_target, double diff)
 	}
 
 	// FIXME: is target set right?
-	d64 = (double)65536 * truediffone;
+	d64 = truediffone;
 	d64 /= diff;
 
 	dcut64 = d64 / bits192;
@@ -5962,7 +5965,7 @@ bool test_nonce(struct work *work, uint32_t nonce)
 	rebuild_nonce(work, nonce);
 	diff1targ = 0x0000ffffUL;
 
-	return (le32toh(*hash_32) <= diff1targ);
+	return (be32toh(*hash_32) <= diff1targ);
 }
 
 /* For testing a nonce against an arbitrary diff */
@@ -5971,7 +5974,7 @@ bool test_nonce_diff(struct work *work, uint32_t nonce, double diff)
 	uint64_t *hash64 = (uint64_t *)(work->hash + 24), diff64;
 
 	rebuild_nonce(work, nonce);
-	diff64 = 0x0000ffff00000000ULL;
+	diff64 = 0x00000000ffff0000ULL;
 	diff64 /= diff;
 
 	return (le64toh(*hash64) <= diff64);
@@ -5980,11 +5983,8 @@ bool test_nonce_diff(struct work *work, uint32_t nonce, double diff)
 static void update_work_stats(struct thr_info *thr, struct work *work)
 {
 	double test_diff = current_diff;
-	test_diff *= 65536;
 
 	work->share_diff = share_diff(work);
-
-	test_diff *= 65536;
 
 	if (unlikely(work->share_diff >= test_diff)) {
 		work->block = true;
@@ -6126,6 +6126,7 @@ static void hash_sole_work(struct thr_info *mythr)
 		double wu;
 
 		wu = total_diff1 / total_secs * 60;
+
 		if (wu > 30 && drv->working_diff < drv->max_diff &&
 			drv->working_diff < work->work_difficulty) {
 			drv->working_diff++;

@@ -102,6 +102,7 @@ be32enc_vect(uint32_t *dst, const uint32_t *src, uint32_t len)
 
 inline void xhash(void *state, const void *input)
 {
+    init_Xhash_contexts();
     
     Xhash_context_holder ctx;
     
@@ -109,7 +110,6 @@ inline void xhash(void *state, const void *input)
     //blake-bmw-groestl-sken-jh-meccak-luffa-cubehash-shivite-simd-echo
     memcpy(&ctx, &base_contexts, sizeof(base_contexts));
     
-
     sph_blake512 (&ctx.blake1, input, 80);
     sph_blake512_close (&ctx.blake1, hashA);        
 
