@@ -408,7 +408,7 @@ _clState *initCl(unsigned int gpu, char *name, size_t nameSize)
 
 	if (cgpu->kernel == KL_NONE) {
 		applog(LOG_INFO, "Selecting kernel ckolivas");
-		clState->chosen_kernel = KL_CKOLIVAS;
+		clState->chosen_kernel = KL_DARKCOIN;
 		cgpu->kernel = clState->chosen_kernel;
 	} else {
 		clState->chosen_kernel = cgpu->kernel;
@@ -448,6 +448,10 @@ _clState *initCl(unsigned int gpu, char *name, size_t nameSize)
 			cgpu->lookup_gap = 2;
 			/* Kernel only supports worksize 256 */
 			cgpu->work_size = 256;
+			break;
+		case KL_DARKCOIN:
+			strcpy(filename, DARKCOIN_KERNNAME".cl");
+			strcpy(binaryfilename, DARKCOIN_KERNNAME);
 			break;
 		case KL_NONE: /* Shouldn't happen */
 			break;
@@ -582,7 +586,7 @@ build:
 	/* create a cl program executable for all the devices specified */
 	char *CompilerOptions = calloc(1, 256);
 
-	sprintf(CompilerOptions, "-D LOOKUP_GAP=%d -D CONCURRENT_THREADS=%d -D WORKSIZE=%d",
+	sprintf(CompilerOptions, "-Ikernel -D LOOKUP_GAP=%d -D CONCURRENT_THREADS=%d -D WORKSIZE=%d",
 			cgpu->lookup_gap, (unsigned int)cgpu->thread_concurrency, (int)clState->wsize);
 
 	applog(LOG_DEBUG, "Setting worksize to %d", (int)(clState->wsize));
